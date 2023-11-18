@@ -27,15 +27,12 @@
     }
 </style>
 <body>
-    <h1>Upload a File to AWS S3</h1>
+    <h1>QR Memo</h1>
     <form id="upload-form">
         <input type="file" id="file-input" accept="image/*" required>
         <button type="submit">Upload</button>
+        <progress id="progress" value="0" max="100"></progress>
     </form>
-    <progress id="progress" value="0" max="100"></progress>
-    <h1>Get file</h1>
-    <input type="text" id="file-download" accept="image/*" required>
-    <button onclick="showHandler()">Show</button>
     <div class="imgbox">
         <img src="" id="imgPreview"/>
     </div>

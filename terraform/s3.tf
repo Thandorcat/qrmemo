@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "web_bucket" {
-  bucket = "web-test-bucket-123"
+  bucket = "web-test-bucket-1234"
 }
 
 resource "aws_s3_object" "index_file" {

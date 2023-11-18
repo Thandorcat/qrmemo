@@ -1,5 +1,4 @@
-const BUCKET_NAME = 'target-bucket-test-123';
-const URL = "https://ollyljxpaeurqum3u3qtahhgaa0tsegp.lambda-url.us-east-1.on.aws/";
+const backendURL = "https://r627yqhmtpvupwc5wvr73tmv6a0sfzyj.lambda-url.us-east-1.on.aws/";
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file-input');
@@ -8,78 +7,83 @@ const showForm = document.getElementById('download-form');
 const fileNameInput = document.getElementById('file-download');
 const imgPreview = document.getElementById('imgPreview');
 
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+var uploadURL = "";
 
-    console.log("Function works!");
-
-    const file = fileInput.files[0];
-    if (!file) {
-        alert('Please select a file to upload.');
-        return;
-    }
-
-    // Step 1: Get the presigned URL
-    axios
-        .post(URL, {
-            type: "PUT",
-            fileName: file.name
-        })
-        .then((presignedResponse) => {
-            const presignedUrl = presignedResponse.data; // Assuming the response contains the URL
-            console.log(presignedUrl);
-
-            // Step 2: Upload the file using the presigned URL
-            axios
-                .put(presignedUrl, file, {
-                    headers: {
-                        'Content-Type': 'application/octet-stream',
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        const loaded = progressEvent.loaded;
-                        const total = progressEvent.total;
-                        const percent = (loaded / total) * 100;
-                        progress.value = percent;
-                        console.log(`Upload progress: ${percent}%`);
-                    },
-                })
-                .then((response) => {
-                    if (response.status === 200) {
-                        alert('File uploaded successfully!');
-                        fileNameInput.value = file.name
-                    } else {
-                        alert('File upload failed.');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error during file upload:', error);
-                    alert('File upload failed.');
-                });
-        })
-        .catch((error) => {
-            console.error('Error while obtaining the presigned URL:', error);
-            alert('File upload failed.');
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    checkPhotoExistence();
 });
 
-// showForm.addEventListener('submit', showHandler)
+async function checkPhotoExistence() {
+    try {
 
-async function showHandler() {
-
-    console.log("Show function works!");
-    const filename = fileNameInput.value;
-    console.log(filename);
-
-    let responce = await axios.post(
-        URL, {
-            type: "GET",
-            fileName: filename
+        // Get the current URL
+        const currentUrl = window.location.href;
+        // Create a URLSearchParams object from the current URL
+        const urlParams = new URLSearchParams(new URL(currentUrl).search);
+        // Get a specific parameter by name, for example, 'photoId'
+        if (urlParams.toString() == '') {
+            alert("No parameters provided!");
         }
-    );
+        const provided_token = urlParams.get('tk');
+        const provided_secret = urlParams.get('s');
+        
+        let response = await axios.post(
+            backendURL, {
+                token: provided_token,
+                secret: provided_secret
+            }
+        );
+        console.log(response);
 
-    console.log(responce);
-    let getURL = responce.data
-    console.log(getURL);
-    imgPreview.src = getURL
-    alert('Finished!');
+        if (response.status != 200) {
+            console.log("Failed request to backend!");
+            alert(response.body);
+            return;
+        }
+        console.log(response.data);
+        const presignedUrl = response.data.url;
+
+        if (response.data.existing_file) {
+            // If the photo exists, display it
+            console.log("File exists!");
+            console.log(presignedUrl);
+            imgPreview.src = presignedUrl;
+            form.style.display = 'none';
+        } else {
+            // If the photo does not exist, show the upload form
+            console.log("New upload!");
+            console.log(presignedUrl);
+
+            uploadURL = presignedUrl;
+
+            imgPreview.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error checking photo existence:', error);
+    }
 }
+
+async function uploadFile() {
+    console.log("Upload URL is: " + uploadURL);
+    let response = await axios.put(presignedUrl, file, {
+        headers: {
+            'Content-Type': 'application/octet-stream',
+        },
+        onUploadProgress: (progressEvent) => {
+            const loaded = progressEvent.loaded;
+            const total = progressEvent.total;
+            const percent = (loaded / total) * 100;
+            progress.value = percent;
+            console.log(`Upload progress: ${percent}%`);
+        },
+    })
+    if (response.status === 200) {
+        alert('File uploaded successfully!');
+    } else {
+        alert('File upload failed.');
+    }
+}
+
+form.addEventListener('submit', () => {
+    uploadFile();
+});

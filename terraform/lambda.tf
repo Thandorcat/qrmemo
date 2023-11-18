@@ -21,7 +21,8 @@ data "aws_iam_policy_document" "lambda_logging" {
     effect = "Allow"
 
     actions = [
-      "s3:*"
+      "s3:*",
+      "dynamodb:*"
     ]
 
     resources = ["*"]
@@ -55,6 +56,12 @@ resource "aws_lambda_function" "test_lambda" {
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
   runtime = "python3.11"
+
+  environment {
+    variables = {
+      target_bucket = aws_s3_bucket.test_bucket.id
+    }
+  }
 }
 
 resource "aws_lambda_function_url" "test_live" {

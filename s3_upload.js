@@ -1,11 +1,13 @@
-const backendURL = "https://r627yqhmtpvupwc5wvr73tmv6a0sfzyj.lambda-url.us-east-1.on.aws/";
+const backendURL = "https://bzfas4pxkyo3gcinlseubt2pv40eyhzv.lambda-url.us-east-1.on.aws/";
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file-input');
 const progress = document.getElementById('progress');
 const showForm = document.getElementById('download-form');
 const fileNameInput = document.getElementById('file-download');
-const imgPreview = document.getElementById('imgPreview');
+const imgPreview = document.getElementById('img-preview');
+const imgBox = document.getElementById('img-box');
+const uploadBox = document.getElementById('upload-section')
 
 var uploadURL = "";
 
@@ -48,7 +50,7 @@ async function checkPhotoExistence() {
             console.log("File exists!");
             console.log(presignedUrl);
             imgPreview.src = presignedUrl;
-            form.style.display = 'none';
+            imgBox.style.display = 'block';
         } else {
             // If the photo does not exist, show the upload form
             console.log("New upload!");
@@ -56,7 +58,7 @@ async function checkPhotoExistence() {
 
             uploadURL = presignedUrl;
 
-            imgPreview.style.display = 'none';
+            uploadBox.style.display = 'block';
         }
     } catch (error) {
         console.error('Error checking photo existence:', error);
@@ -65,7 +67,14 @@ async function checkPhotoExistence() {
 
 async function uploadFile() {
     console.log("Upload URL is: " + uploadURL);
-    let response = await axios.put(presignedUrl, file, {
+
+    console.log("Function works!");
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Please select a file to upload.');
+        return;
+    }
+    let response = await axios.put(uploadURL, file, {
         headers: {
             'Content-Type': 'application/octet-stream',
         },
@@ -83,7 +92,3 @@ async function uploadFile() {
         alert('File upload failed.');
     }
 }
-
-form.addEventListener('submit', () => {
-    uploadFile();
-});

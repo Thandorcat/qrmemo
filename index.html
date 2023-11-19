@@ -20,7 +20,7 @@
         max-width: 100%;
     }
 
-    .imgbox {
+    #imgbox {
         margin: 10px; /* Add your desired margin here */
         padding: 10px; /* Alternatively, you can use padding */
         border: 1px solid #211d1d; /* Add a border for better visibility */
@@ -28,13 +28,13 @@
 </style>
 <body>
     <h1>QR Memo</h1>
-    <form id="upload-form">
+    <div id="upload-section" style="display: none;">
         <input type="file" id="file-input" accept="image/*" required>
-        <button type="submit">Upload</button>
+        <button onclick="uploadFile()">Upload</button>
         <progress id="progress" value="0" max="100"></progress>
-    </form>
-    <div class="imgbox">
-        <img src="" id="imgPreview"/>
+    </div>
+    <div id="img-box" style="display: none;">
+        <img src="" id="img-preview"/>
     </div>
 </body>
 <script src="/s3_upload.js"></script>

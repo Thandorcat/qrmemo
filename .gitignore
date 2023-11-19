@@ -10,3 +10,5 @@
 **/*.zip
 
 qrenv/*
+codes/*
+.DS_Store

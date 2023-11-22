@@ -1,4 +1,4 @@
-const backendURL = "https://bzfas4pxkyo3gcinlseubt2pv40eyhzv.lambda-url.us-east-1.on.aws/";
+const backendURL = "https://2oiubxk2b5pwavfdwjrhemghjq0npkry.lambda-url.us-east-1.on.aws/";
 
 const form = document.getElementById('upload-form');
 const fileInput = document.getElementById('file-input');
@@ -11,6 +11,18 @@ const uploadBox = document.getElementById('upload-section')
 
 var uploadURL = "";
 
+// Get the current URL
+const currentUrl = window.location.href;
+// Create a URLSearchParams object from the current URL
+const urlParams = new URLSearchParams(new URL(currentUrl).search);
+// Get a specific parameter by name, for example, 'photoId'
+if (urlParams.toString() == '') {
+    alert("No parameters provided!");
+}
+const provided_token = urlParams.get('tk');
+const provided_secret = urlParams.get('s');
+        
+
 document.addEventListener('DOMContentLoaded', () => {
     checkPhotoExistence();
 });
@@ -18,17 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function checkPhotoExistence() {
     try {
 
-        // Get the current URL
-        const currentUrl = window.location.href;
-        // Create a URLSearchParams object from the current URL
-        const urlParams = new URLSearchParams(new URL(currentUrl).search);
-        // Get a specific parameter by name, for example, 'photoId'
-        if (urlParams.toString() == '') {
-            alert("No parameters provided!");
-        }
-        const provided_token = urlParams.get('tk');
-        const provided_secret = urlParams.get('s');
-        
         let response = await axios.post(
             backendURL, {
                 token: provided_token,
@@ -88,6 +89,12 @@ async function uploadFile() {
     })
     if (response.status === 200) {
         alert('File uploaded successfully!');
+        let response = await axios.post(
+            backendURL, {
+                token: provided_token,
+                notification: "UPLOAD_SUCCESSFUL"
+            }
+        );
     } else {
         alert('File upload failed.');
     }

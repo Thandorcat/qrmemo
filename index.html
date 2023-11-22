@@ -1,31 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>File Upload to AWS S3</title>
+    <title>QR Memo</title>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1488.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            padding: 0;
+            display: block;
+            margin: 0 auto;
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        #upload-section, #img-box {
+            display: none; /* Hidden by default */
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #211d1d;
+            text-align: center; /* Center content */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            input[type="file"], button {
+                width: 100%; /* Full width on small screens */
+                padding: 12px; /* Bigger padding for easier touch */
+                font-size: 16px; /* Larger font size */
+                margin: 5px 0; /* Add margin for spacing */
+            }
+
+            #progress {
+                width: 100%; /* Full width progress bar */
+                height: 20px; /* Taller progress bar for easy viewing */
+            }
+
+            #upload-section, #img-box {
+                margin: 5px; /* Smaller margin on smaller screens */
+                padding: 10px;
+            }
+        }
+
+        /* Flexbox for better layout */
+        #upload-section {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            align-items: center; /* Center-align items horizontally */
+            justify-content: center; /* Center content vertically */
+            gap: 10px; /* Space between elements */
+        }
+    </style>
 </head>
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1488.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    img {
-        padding: 0;
-        display: block;
-        margin: 0 auto;
-        max-height: 100%;
-        max-width: 100%;
-    }
-
-    #imgbox {
-        margin: 10px; /* Add your desired margin here */
-        padding: 10px; /* Alternatively, you can use padding */
-        border: 1px solid #211d1d; /* Add a border for better visibility */
-    }
-</style>
 <body>
     <h1>QR Memo</h1>
     <div id="upload-section" style="display: none;">
@@ -36,6 +67,6 @@
     <div id="img-box" style="display: none;">
         <img src="" id="img-preview"/>
     </div>
+    <script src="/s3_upload.js"></script>
 </body>
-<script src="/s3_upload.js"></script>
 </html>

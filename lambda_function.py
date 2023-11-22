@@ -6,6 +6,7 @@ import os
 from botocore.exceptions import ClientError
 
 S3_TARGET_BUCKET = os.environ.get('target_bucket')
+DYNAMODB_TABLE = "tokens"
 
 def get_presigned_url(bucket_name, object_name, expiration=600):
 
@@ -46,6 +47,27 @@ def put_presigned_url(bucket_name, object_name, expiration=600):
     # The response contains the presigned URL
     return response
 
+def mark_upload_sucessfull(token):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    primary_key_value = {'token': token}
+    response = table.update_item(
+        Key=primary_key_value,
+        UpdateExpression='SET #key = :value',
+        ExpressionAttributeNames={'#key': "status"},
+        ExpressionAttributeValues={':value': "Uploaded"}
+    )
+    if response['ResponseMetadata']['HTTPStatusCode'] != 200:
+        return {
+            'statusCode': 500,
+            'body': "Something wrong DB"
+        }
+    return {
+        'statusCode': 200,
+        'body': "Record updated"
+    }
+    
+
 def generate_existing_file(item, secret_provided):
     secret_stored = item['secret']
     path = item['path']
@@ -77,7 +99,8 @@ def generate_new_file(table, token, secret_provided):
     item = {
         'token': token,
         'secret': secret_provided,
-        'path': path
+        'path': path,
+        'status': 'Uploading'
     }
     
     response = table.put_item(Item=item)
@@ -114,14 +137,17 @@ def lambda_handler(event, context):
 
     token = body.get("token")
     secret_provided = body.get("secret")
-    if not token or not secret_provided:
+    notification = body.get("notification")
+    if not token:
         return {
             'statusCode': 404,
             'body': "Wrong parameters!"
         }
+    if notification == "UPLOAD_SUCCESSFUL":
+        return mark_upload_sucessfull(token)
 
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('tokens')
+    table = dynamodb.Table(DYNAMODB_TABLE)
     primary_key_value = {'token': token}
     response = table.get_item(Key=primary_key_value)
 
@@ -129,8 +155,15 @@ def lambda_handler(event, context):
     if 'Item' in response:
         print("Record exists" + str(response['Item']))
         item = response['Item']
-        response = generate_existing_file(item, secret_provided)
-        return response
+        if item['status'] == "Uploaded":
+            response = generate_existing_file(item, secret_provided)
+            return response
+        else:
+            response = generate_new_file(table, token, secret_provided)
+            return response
+
     else:
-        response = generate_new_file(table, token, secret_provided)
-        return response
+        return {
+            'statusCode': 404,
+            'body': "No such resource!"
+        }
